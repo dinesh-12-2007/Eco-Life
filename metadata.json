@@ -1,6 +1,10 @@
 {
   "name": "WasteFlow EcoCycle Native Android App",
   "description": "A complete native Kotlin Jetpack Compose Android application and interactive simulator for WasteFlow EcoCycle municipal waste management and citizen recycling platform.",
-  "requestFramePermissions": ["geolocation"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

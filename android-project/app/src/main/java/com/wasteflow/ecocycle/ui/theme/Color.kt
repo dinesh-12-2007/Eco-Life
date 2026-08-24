@@ -3,10 +3,13 @@ package com.wasteflow.ecocycle.ui.theme
 import androidx.compose.ui.graphics.Color
 
 val EcoPrimary = Color(0xFF3E6A00)
+val EcoOnPrimary = Color(0xFFFFFFFF)
 val EcoPrimaryContainer = Color(0xFF8BC34A)
 val EcoOnPrimaryContainer = Color(0xFF2D4E00)
 val EcoPrimaryFixed = Color(0xFFB9F474)
 val EcoPrimaryFixedDim = Color(0xFF9ED75B)
+val EcoOnPrimaryFixed = Color(0xFF0F2000)
+val EcoOnPrimaryFixedVariant = Color(0xFF2D4E00)
 val EcoSurface = Color(0xFFF8FBEC)
 val EcoSurfaceContainer = Color(0xFFEDEFE1)
 val EcoSurfaceContainerHigh = Color(0xFFE7EADC)
