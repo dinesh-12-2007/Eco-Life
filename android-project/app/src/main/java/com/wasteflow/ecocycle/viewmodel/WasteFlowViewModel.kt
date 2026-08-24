@@ -25,7 +25,16 @@ class WasteFlowViewModel(
     val employees: StateFlow<List<Employee>> = repository.employees
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val rewards: StateFlow<List<Reward>> = repository.rewards
+    val conversionConfig: StateFlow<PointsConversionConfig> = repository.conversionConfig
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PointsConversionConfig())
+
+    val electricityProviders: StateFlow<List<ElectricityProvider>> = repository.electricityProviders
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val transactions: StateFlow<List<RewardTransaction>> = repository.transactions
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val billPaymentReceipts: StateFlow<List<BillPaymentReceipt>> = repository.billPaymentReceipts
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun selectRole(role: UserRole) {
@@ -35,6 +44,36 @@ class WasteFlowViewModel(
     fun logWaste(zone: String, type: WasteType, weightKg: Double, points: Int) {
         viewModelScope.launch {
             repository.submitWasteLog(zone, type, weightKg, points)
+        }
+    }
+
+    fun fetchElectricityBill(providerId: String, consumerNumber: String): ElectricityBill {
+        return repository.fetchElectricityBill(providerId, consumerNumber)
+    }
+
+    fun payElectricityBill(
+        providerId: String,
+        consumerNumber: String,
+        billNumber: String,
+        totalBillAmount: Double,
+        pointsToRedeem: Int,
+        onResult: (Result<BillPaymentReceipt>) -> Unit
+    ) {
+        viewModelScope.launch {
+            val result = repository.payElectricityBill(
+                providerId = providerId,
+                consumerNumber = consumerNumber,
+                billNumber = billNumber,
+                totalBillAmount = totalBillAmount,
+                pointsToRedeem = pointsToRedeem
+            )
+            onResult(result)
+        }
+    }
+
+    fun updateConversionRate(pointsPerUnit: Int, currencySymbol: String, description: String) {
+        viewModelScope.launch {
+            repository.setConversionConfig(pointsPerUnit, currencySymbol, description)
         }
     }
 
@@ -66,10 +105,5 @@ class WasteFlowViewModel(
         viewModelScope.launch {
             repository.addComplaint(title, description, location, priority)
         }
-    }
-
-    fun redeemReward(reward: Reward, onResult: (Boolean) -> Unit) {
-        val success = repository.redeemReward(reward)
-        onResult(success)
     }
 }

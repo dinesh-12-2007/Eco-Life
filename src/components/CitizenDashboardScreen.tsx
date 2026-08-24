@@ -1,12 +1,12 @@
 import React from 'react';
 import { User } from '../types';
-import { Trash2, User as UserIcon, Navigation, Calendar, ArrowRight, AlertTriangle, Gift, Award, Leaf, ChevronRight } from 'lucide-react';
+import { Trash2, User as UserIcon, Navigation, Calendar, AlertTriangle, Zap, Wallet, Leaf, ChevronRight } from 'lucide-react';
 
 interface Props {
   user: User;
   onNavigateLiveRoute: () => void;
   onNavigateReportIssue: () => void;
-  onNavigateGiveAway: () => void;
+  onNavigateElectricityBill: () => void;
   onNavigateRedeemPoints: () => void;
   onRoleSwitchClick: () => void;
 }
@@ -15,7 +15,7 @@ export const CitizenDashboardScreen: React.FC<Props> = ({
   user,
   onNavigateLiveRoute,
   onNavigateReportIssue,
-  onNavigateGiveAway,
+  onNavigateElectricityBill,
   onNavigateRedeemPoints,
   onRoleSwitchClick,
 }) => {
@@ -28,7 +28,7 @@ export const CitizenDashboardScreen: React.FC<Props> = ({
             <Trash2 className="w-4 h-4" />
           </div>
           <span className="font-bold text-sm text-slate-900 tracking-tight">
-            WasteFlow
+            WasteFlow EcoCycle
           </span>
         </div>
 
@@ -58,22 +58,23 @@ export const CitizenDashboardScreen: React.FC<Props> = ({
               </span>
             </div>
             <span className="text-[10px] uppercase font-semibold tracking-wider bg-white/15 px-2 py-0.5 rounded-full text-indigo-100">
-              Active Tier
+              Active Eco Tier
             </span>
           </div>
 
           <div className="flex items-baseline justify-between">
             <div>
               <div className="text-3xl font-extrabold tracking-tight">
-                {user.balancePoints.toLocaleString()}
+                {user.balancePoints.toLocaleString()} PTS
               </div>
-              <div className="text-xs text-indigo-200 font-medium">Eco Reward Points</div>
+              <div className="text-xs text-indigo-200 font-medium">≈ ₹{(user.balancePoints / 10).toFixed(2)} Electricity Credit</div>
             </div>
             <button
-              onClick={onNavigateRedeemPoints}
-              className="bg-white text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              onClick={onNavigateElectricityBill}
+              className="bg-amber-400 text-slate-950 hover:bg-amber-300 px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
             >
-              Redeem
+              <Zap className="w-3.5 h-3.5 fill-current" />
+              Pay Bill
             </button>
           </div>
         </div>
@@ -176,10 +177,42 @@ export const CitizenDashboardScreen: React.FC<Props> = ({
         {/* Quick Actions Section */}
         <div className="space-y-2">
           <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-1">
-            Quick Actions
+            Utility & Civic Actions
           </div>
 
           <div className="grid grid-cols-1 gap-2">
+            <button
+              onClick={onNavigateElectricityBill}
+              className="w-full bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/70 rounded-xl p-3.5 flex items-center justify-between shadow-xs hover:border-amber-300 transition-all cursor-pointer"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-amber-500 text-white rounded-lg flex items-center justify-center shadow-xs">
+                  <Zap className="w-4 h-4" />
+                </div>
+                <div className="text-left">
+                  <div className="text-xs font-bold text-slate-900">Pay Electricity Bill</div>
+                  <div className="text-[10px] text-slate-600">Redeem points for power bill credit (100 pts = ₹10)</div>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-amber-700" />
+            </button>
+
+            <button
+              onClick={onNavigateRedeemPoints}
+              className="w-full bg-white border border-slate-200 rounded-xl p-3.5 flex items-center justify-between shadow-xs hover:border-slate-300 transition-all cursor-pointer"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center">
+                  <Wallet className="w-4 h-4" />
+                </div>
+                <div className="text-left">
+                  <div className="text-xs font-semibold text-slate-900">Reward Points Wallet</div>
+                  <div className="text-[10px] text-slate-400">View earning ledger & transaction history</div>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+
             <button
               onClick={onNavigateReportIssue}
               className="w-full bg-white border border-slate-200 rounded-xl p-3.5 flex items-center justify-between shadow-xs hover:border-slate-300 transition-all cursor-pointer"
@@ -189,40 +222,8 @@ export const CitizenDashboardScreen: React.FC<Props> = ({
                   <AlertTriangle className="w-4 h-4" />
                 </div>
                 <div className="text-left">
-                  <div className="text-xs font-semibold text-slate-900">Report Missed Pickup</div>
-                  <div className="text-[10px] text-slate-400">Log an overflow or missed container</div>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
-            </button>
-
-            <button
-              onClick={onNavigateGiveAway}
-              className="w-full bg-white border border-slate-200 rounded-xl p-3.5 flex items-center justify-between shadow-xs hover:border-slate-300 transition-all cursor-pointer"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
-                  <Gift className="w-4 h-4" />
-                </div>
-                <div className="text-left">
-                  <div className="text-xs font-semibold text-slate-900">Give Away Reusable Item</div>
-                  <div className="text-[10px] text-slate-400">Post items for community upcycling</div>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
-            </button>
-
-            <button
-              onClick={onNavigateRedeemPoints}
-              className="w-full bg-white border border-slate-200 rounded-xl p-3.5 flex items-center justify-between shadow-xs hover:border-slate-300 transition-all cursor-pointer"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center">
-                  <Award className="w-4 h-4" />
-                </div>
-                <div className="text-left">
-                  <div className="text-xs font-semibold text-slate-900">Eco Rewards Marketplace</div>
-                  <div className="text-[10px] text-slate-400">Claim eco discounts & vouchers</div>
+                  <div className="text-xs font-semibold text-slate-900">Report Missed Pickup / Issue</div>
+                  <div className="text-[10px] text-slate-400">Log an overflow or uncollected container</div>
                 </div>
               </div>
               <ChevronRight className="w-4 h-4 text-slate-400" />

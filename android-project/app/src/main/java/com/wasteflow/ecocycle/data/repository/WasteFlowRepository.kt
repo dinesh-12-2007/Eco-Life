@@ -38,12 +38,12 @@ class WasteFlowRepository {
             ),
             ServiceTask(
                 id = "t-102",
-                type = TaskType.GIVE_AWAY,
-                title = "Give Away Pickup",
+                type = TaskType.MISSED_COLLECTION,
+                title = "Commercial Bin Overflow",
                 location = "Maple Ave",
                 time = "10:15 AM",
                 distance = "2.4 km away",
-                itemCount = 4,
+                itemCount = 3,
                 priority = "NORMAL",
                 status = TaskStatus.PENDING
             ),
@@ -116,35 +116,208 @@ class WasteFlowRepository {
     )
     val employees: StateFlow<List<Employee>> = _employees.asStateFlow()
 
-    private val _rewards = MutableStateFlow(
-        listOf(
-            Reward("r-01", "$15 Eco Groceries Voucher", "Redeemable at Organic Corner & Whole Earth markets", 500, "Vouchers"),
-            Reward("r-02", "Free 7-Day Transit Pass", "Unlimited subway and bus transit pass", 750, "Transit"),
-            Reward("r-03", "EcoCycle Heavy-Duty Canvas Tote", "Limited edition brutalist upcycled tote bag", 300, "Merchandise"),
-            Reward("r-04", "$25 Electric Bill Credit", "Direct municipal solar power rebate", 1200, "Utilities")
+    private val _conversionConfig = MutableStateFlow(
+        PointsConversionConfig(
+            pointsPerUnit = 10,
+            currencySymbol = "₹",
+            description = "100 Reward Points = ₹10 Electricity Bill Credit"
         )
     )
-    val rewards: StateFlow<List<Reward>> = _rewards.asStateFlow()
+    val conversionConfig: StateFlow<PointsConversionConfig> = _conversionConfig.asStateFlow()
+
+    private val _electricityProviders = MutableStateFlow(
+        listOf(
+            ElectricityProvider("prov-01", "BESCOM (Bangalore Electricity)", "Karnataka", "BESCOM"),
+            ElectricityProvider("prov-02", "TANGEDCO (Tamil Nadu Generation & Distribution)", "Tamil Nadu", "TANGEDCO"),
+            ElectricityProvider("prov-03", "MSEDCL (Mahavitaran Maharashtra)", "Maharashtra", "MSEDCL"),
+            ElectricityProvider("prov-04", "BSES Yamuna Power Limited", "Delhi", "BSES-Y"),
+            ElectricityProvider("prov-05", "APSPDCL (Southern Power AP)", "Andhra Pradesh", "APSPDCL"),
+            ElectricityProvider("prov-06", "Tata Power DDL", "Delhi-NCR", "TATAPOWER")
+        )
+    )
+    val electricityProviders: StateFlow<List<ElectricityProvider>> = _electricityProviders.asStateFlow()
+
+    private val _transactions = MutableStateFlow(
+        listOf(
+            RewardTransaction(
+                id = "tx-101",
+                type = TransactionType.EARN,
+                points = 150,
+                description = "Segregated Plastic Recycling (10.0 kg)",
+                date = "2026-08-22 14:30",
+                referenceType = "WASTE_LOG",
+                referenceId = "WL-8819"
+            ),
+            RewardTransaction(
+                id = "tx-102",
+                type = TransactionType.EARN,
+                points = 200,
+                description = "Metal & Aluminium Cans Drop-off (10.0 kg)",
+                date = "2026-08-18 10:15",
+                referenceType = "WASTE_LOG",
+                referenceId = "WL-8702"
+            ),
+            RewardTransaction(
+                id = "tx-103",
+                type = TransactionType.REDEEM,
+                points = 600,
+                description = "Electricity Bill Credit - BESCOM (Cons. #90283471)",
+                date = "2026-08-10 11:20",
+                referenceType = "ELECTRICITY_BILL",
+                referenceId = "PAY-5510"
+            ),
+            RewardTransaction(
+                id = "tx-104",
+                type = TransactionType.EARN,
+                points = 1500,
+                description = "Citizen Bonus: Zero-Contamination Waste Streak",
+                date = "2026-08-01 09:00",
+                referenceType = "STREAK_BONUS",
+                referenceId = "STRK-01"
+            )
+        )
+    )
+    val transactions: StateFlow<List<RewardTransaction>> = _transactions.asStateFlow()
+
+    private val _billPaymentReceipts = MutableStateFlow(
+        listOf(
+            BillPaymentReceipt(
+                paymentId = "PAY-5510",
+                billNumber = "BILL-AUG-9921",
+                consumerNumber = "90283471",
+                providerName = "BESCOM (Bangalore Electricity)",
+                totalBillAmount = 850.0,
+                pointsRedeemed = 600,
+                pointsDiscountAmount = 60.0,
+                amountPaid = 790.0,
+                transactionRef = "TXN_ELEC_993821093",
+                timestamp = "2026-08-10 11:20",
+                updatedWalletBalance = 1250,
+                status = "SUCCESS"
+            )
+        )
+    )
+    val billPaymentReceipts: StateFlow<List<BillPaymentReceipt>> = _billPaymentReceipts.asStateFlow()
 
     fun setUserRole(role: UserRole) {
         _currentUser.value = _currentUser.value.copy(role = role)
     }
 
+    fun setConversionConfig(pointsPerUnit: Int, currencySymbol: String, description: String) {
+        _conversionConfig.value = PointsConversionConfig(pointsPerUnit, currencySymbol, description)
+    }
+
     fun submitWasteLog(zone: String, type: WasteType, weightKg: Double, points: Int) {
         val user = _currentUser.value
+        val updatedBalance = user.balancePoints + points
         _currentUser.value = user.copy(
-            balancePoints = user.balancePoints + points,
+            balancePoints = updatedBalance,
             recycledKgYtd = user.recycledKgYtd + weightKg
+        )
+
+        val newTx = RewardTransaction(
+            id = "tx-${System.currentTimeMillis() % 100000}",
+            type = TransactionType.EARN,
+            points = points,
+            description = "Logged ${type.name} recycling (${weightKg} kg in $zone)",
+            date = "Today, Just now",
+            referenceType = "WASTE_LOG",
+            referenceId = "WL-${(1000..9999).random()}"
+        )
+        _transactions.value = listOf(newTx) + _transactions.value
+    }
+
+    fun fetchElectricityBill(providerId: String, consumerNumber: String): ElectricityBill {
+        val provider = _electricityProviders.value.find { it.id == providerId }
+            ?: _electricityProviders.value.first()
+        
+        // Deterministic realistic bill generation based on consumer number
+        val hash = (consumerNumber.hashCode() and 0x7FFFFFFF)
+        val calculatedAmount = 450.0 + (hash % 1200)
+        val month = "August 2026"
+        val dueDate = "2026-09-10"
+
+        return ElectricityBill(
+            id = "EB-${consumerNumber.takeLast(4)}",
+            providerId = provider.id,
+            providerName = provider.name,
+            consumerNumber = consumerNumber,
+            consumerName = _currentUser.value.name,
+            billNumber = "EBILL-${(hash % 90000) + 10000}",
+            billingMonth = month,
+            dueDate = dueDate,
+            billAmount = calculatedAmount,
+            status = "UNPAID"
         )
     }
 
-    fun redeemReward(reward: Reward): Boolean {
+    fun payElectricityBill(
+        providerId: String,
+        consumerNumber: String,
+        billNumber: String,
+        totalBillAmount: Double,
+        pointsToRedeem: Int
+    ): Result<BillPaymentReceipt> {
         val user = _currentUser.value
-        if (user.balancePoints >= reward.costPoints) {
-            _currentUser.value = user.copy(balancePoints = user.balancePoints - reward.costPoints)
-            return true
+        val config = _conversionConfig.value
+
+        // Server-side validation: Citizen cannot redeem more points than owned
+        if (pointsToRedeem < 0) {
+            return Result.failure(IllegalArgumentException("Points to redeem cannot be negative."))
         }
-        return false
+        if (pointsToRedeem > user.balancePoints) {
+            return Result.failure(IllegalStateException("Insufficient reward points. Available: ${user.balancePoints} PTS, Requested: $pointsToRedeem PTS."))
+        }
+
+        // Calculate discount (points / pointsPerUnit)
+        val discountAmount = pointsToRedeem.toDouble() / config.pointsPerUnit
+        if (discountAmount > totalBillAmount) {
+            return Result.failure(IllegalArgumentException("Reward discount cannot exceed total bill amount."))
+        }
+
+        val amountPaid = totalBillAmount - discountAmount
+        val updatedPoints = user.balancePoints - pointsToRedeem
+
+        // Atomically update user balance
+        _currentUser.value = user.copy(balancePoints = updatedPoints)
+
+        val provider = _electricityProviders.value.find { it.id == providerId }
+        val providerName = provider?.name ?: "Electricity Board"
+
+        val paymentId = "PAY-${System.currentTimeMillis() % 100000}"
+        val txnRef = "TXN_ELEC_${System.currentTimeMillis()}"
+
+        // Record REDEEM transaction
+        if (pointsToRedeem > 0) {
+            val tx = RewardTransaction(
+                id = "tx-${System.currentTimeMillis() % 100000}",
+                type = TransactionType.REDEEM,
+                points = pointsToRedeem,
+                description = "Electricity Bill Credit - $providerName (Cons. #$consumerNumber)",
+                date = "Today, Just now",
+                referenceType = "ELECTRICITY_BILL",
+                referenceId = paymentId
+            )
+            _transactions.value = listOf(tx) + _transactions.value
+        }
+
+        val receipt = BillPaymentReceipt(
+            paymentId = paymentId,
+            billNumber = billNumber,
+            consumerNumber = consumerNumber,
+            providerName = providerName,
+            totalBillAmount = totalBillAmount,
+            pointsRedeemed = pointsToRedeem,
+            pointsDiscountAmount = discountAmount,
+            amountPaid = amountPaid,
+            transactionRef = txnRef,
+            timestamp = "Today, Just now",
+            updatedWalletBalance = updatedPoints,
+            status = "SUCCESS"
+        )
+
+        _billPaymentReceipts.value = listOf(receipt) + _billPaymentReceipts.value
+        return Result.success(receipt)
     }
 
     fun updateTaskStatus(taskId: String, status: TaskStatus) {

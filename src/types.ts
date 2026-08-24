@@ -10,7 +10,7 @@ export interface User {
   co2SavedKg: number;
 }
 
-export type TaskType = 'ROUTINE' | 'GIVEAWAY_PICKUP' | 'MISSED_COLLECTION' | 'BIN_REPAIR';
+export type TaskType = 'ROUTINE' | 'SPECIAL_PICKUP' | 'MISSED_COLLECTION' | 'BIN_REPAIR';
 export type TaskStatus = 'ASSIGNED' | 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
 
 export interface ServiceTask {
@@ -48,12 +48,64 @@ export interface Employee {
   tasksDone: number;
 }
 
-export interface Reward {
+export type TransactionType = 'EARN' | 'REDEEM';
+
+export interface RewardTransaction {
   id: string;
-  title: string;
+  type: TransactionType;
+  points: number;
   description: string;
-  costPoints: number;
-  category: string;
+  date: string;
+  referenceType?: string;
+  referenceId?: string;
+}
+
+export interface RewardWallet {
+  currentPoints: number;
+  totalEarned: number;
+  totalUsed: number;
+  transactions: RewardTransaction[];
+}
+
+export interface PointsConversionConfig {
+  pointsPerUnit: number; // 10 points = 1 currency unit (100 pts = ₹10)
+  currencySymbol: string;
+  description: string;
+}
+
+export interface ElectricityProvider {
+  id: string;
+  name: string;
+  state: string;
+  code: string;
+}
+
+export interface ElectricityBill {
+  id: string;
+  providerId: string;
+  providerName: string;
+  consumerNumber: string;
+  consumerName: string;
+  billNumber: string;
+  billingMonth: string;
+  dueDate: string;
+  billAmount: number;
+  status: 'UNPAID' | 'PAID';
+}
+
+export interface BillPaymentReceipt {
+  paymentId: string;
+  billNumber: string;
+  consumerNumber: string;
+  providerName: string;
+  totalBillAmount: number;
+  pointsRedeemed: number;
+  pointsDiscountAmount: number;
+  amountPaid: number;
+  transactionRef: string;
+  timestamp: string;
+  updatedWalletBalance: number;
+  status: string;
 }
 
 export type ScreenId =
@@ -61,7 +113,7 @@ export type ScreenId =
   | 'auth'
   | 'citizen_home'
   | 'live_tracking'
-  | 'give_away'
+  | 'electricity_bill'
   | 'rewards'
   | 'employee_dashboard'
   | 'log_waste'

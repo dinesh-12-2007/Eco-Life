@@ -29,6 +29,29 @@ interface WasteFlowApiService {
     @GET("api/employees")
     suspend fun getEmployees(): Response<List<Employee>>
 
-    @GET("api/rewards")
-    suspend fun getRewards(): Response<List<Reward>>
+    @GET("api/wallet/{userId}")
+    suspend fun getWallet(@Path("userId") userId: String): Response<RewardWallet>
+
+    @GET("api/wallet/{userId}/transactions")
+    suspend fun getRewardTransactions(@Path("userId") userId: String): Response<List<RewardTransaction>>
+
+    @GET("api/config/conversion-rate")
+    suspend fun getConversionConfig(): Response<PointsConversionConfig>
+
+    @GET("api/electricity/providers")
+    suspend fun getElectricityProviders(): Response<List<ElectricityProvider>>
+
+    @GET("api/electricity/bills/fetch")
+    suspend fun fetchElectricityBill(
+        @Query("providerId") providerId: String,
+        @Query("consumerNumber") consumerNumber: String
+    ): Response<ElectricityBill>
+
+    @POST("api/electricity/bills/pay")
+    suspend fun payElectricityBill(
+        @Body request: BillPaymentRequest
+    ): Response<BillPaymentReceipt>
+
+    @GET("api/electricity/bills/history/{userId}")
+    suspend fun getBillPaymentHistory(@Path("userId") userId: String): Response<List<BillPaymentReceipt>>
 }

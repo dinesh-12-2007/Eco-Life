@@ -30,8 +30,8 @@ fun CitizenDashboardScreen(
     user: User,
     onNavigateLiveRoute: () -> Unit,
     onNavigateReportIssue: () -> Unit,
-    onNavigateGiveAway: () -> Unit,
     onNavigateRedeemPoints: () -> Unit,
+    onNavigateElectricityBill: () -> Unit,
     onRoleSwitchClick: () -> Unit
 ) {
     Column(
@@ -412,12 +412,12 @@ fun CitizenDashboardScreen(
                     }
                 }
 
-                // Give Away Item
+                // Pay Electricity Bill
                 BrutalistCard(
                     modifier = Modifier.fillMaxWidth(),
                     backgroundColor = EcoSurface,
                     shadowOffset = 4.dp,
-                    onClick = onNavigateGiveAway
+                    onClick = onNavigateElectricityBill
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -428,24 +428,31 @@ fun CitizenDashboardScreen(
                             Box(
                                 modifier = Modifier
                                     .size(38.dp)
-                                    .background(EcoPrimaryFixedDim)
+                                    .background(EcoPrimaryFixed)
                                     .border(2.dp, EcoOnSurface),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.VolunteerActivism, contentDescription = null, tint = EcoOnSurface)
+                                Icon(Icons.Default.ElectricBolt, contentDescription = null, tint = EcoPrimary)
                             }
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = "GIVE AWAY ITEM",
-                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                                color = EcoOnSurface
-                            )
+                            Column {
+                                Text(
+                                    text = "ELECTRICITY BILL PAYMENT",
+                                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                                    color = EcoOnSurface
+                                )
+                                Text(
+                                    text = "Redeem points for power bill credit",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = EcoOnSurfaceVariant
+                                )
+                            }
                         }
                         Icon(Icons.Default.ArrowOutward, contentDescription = null, tint = EcoOnSurface)
                     }
                 }
 
-                // Redeem Points
+                // Points Wallet & History
                 BrutalistCard(
                     modifier = Modifier.fillMaxWidth(),
                     backgroundColor = EcoSurface,
@@ -465,14 +472,21 @@ fun CitizenDashboardScreen(
                                     .border(2.dp, EcoOnSurface),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.Redeem, contentDescription = null, tint = EcoOnPrimaryContainer)
+                                Icon(Icons.Default.AccountBalanceWallet, contentDescription = null, tint = EcoOnPrimaryContainer)
                             }
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = "REDEEM POINTS",
-                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                                color = EcoOnSurface
-                            )
+                            Column {
+                                Text(
+                                    text = "REWARD POINTS WALLET",
+                                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                                    color = EcoOnSurface
+                                )
+                                Text(
+                                    text = "View balance & transaction ledger",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = EcoOnSurfaceVariant
+                                )
+                            }
                         }
                         Icon(Icons.Default.ArrowOutward, contentDescription = null, tint = EcoOnSurface)
                     }

@@ -22,7 +22,10 @@ fun WasteFlowNavGraph(
     val tasks by viewModel.tasks.collectAsState()
     val complaints by viewModel.complaints.collectAsState()
     val employees by viewModel.employees.collectAsState()
-    val rewards by viewModel.rewards.collectAsState()
+    val transactions by viewModel.transactions.collectAsState()
+    val conversionConfig by viewModel.conversionConfig.collectAsState()
+    val electricityProviders by viewModel.electricityProviders.collectAsState()
+    val billPaymentReceipts by viewModel.billPaymentReceipts.collectAsState()
 
     NavHost(
         navController = navController,
@@ -62,8 +65,8 @@ fun WasteFlowNavGraph(
                 user = currentUser,
                 onNavigateLiveRoute = { navController.navigate(Screen.LiveTracking.route) },
                 onNavigateReportIssue = { navController.navigate(Screen.Complaints.route) },
-                onNavigateGiveAway = { navController.navigate(Screen.GiveAway.route) },
                 onNavigateRedeemPoints = { navController.navigate(Screen.Rewards.route) },
+                onNavigateElectricityBill = { navController.navigate(Screen.ElectricityBill.route) },
                 onRoleSwitchClick = { navController.navigate(Screen.RoleSelection.route) }
             )
         }
@@ -76,21 +79,36 @@ fun WasteFlowNavGraph(
             )
         }
 
-        // Give Away Screen
-        composable(Screen.GiveAway.route) {
-            GiveAwayScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onSubmitSuccess = { navController.popBackStack() }
-            )
-        }
-
-        // Rewards Screen
+        // Rewards Screen (Reward Points Wallet)
         composable(Screen.Rewards.route) {
             RewardsScreen(
                 user = currentUser,
-                rewards = rewards,
-                onRedeemReward = { reward ->
-                    viewModel.redeemReward(reward) {}
+                transactions = transactions,
+                conversionConfig = conversionConfig,
+                onNavigateElectricityBill = { navController.navigate(Screen.ElectricityBill.route) },
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Electricity Bill Payment Screen
+        composable(Screen.ElectricityBill.route) {
+            ElectricityBillScreen(
+                user = currentUser,
+                providers = electricityProviders,
+                conversionConfig = conversionConfig,
+                paymentHistory = billPaymentReceipts,
+                onFetchBill = { providerId, consumerNumber ->
+                    viewModel.fetchElectricityBill(providerId, consumerNumber)
+                },
+                onPayBill = { providerId, consumerNumber, billNumber, totalAmount, pointsToRedeem, onResult ->
+                    viewModel.payElectricityBill(
+                        providerId = providerId,
+                        consumerNumber = consumerNumber,
+                        billNumber = billNumber,
+                        totalBillAmount = totalAmount,
+                        pointsToRedeem = pointsToRedeem,
+                        onResult = onResult
+                    )
                 },
                 onNavigateBack = { navController.popBackStack() }
             )

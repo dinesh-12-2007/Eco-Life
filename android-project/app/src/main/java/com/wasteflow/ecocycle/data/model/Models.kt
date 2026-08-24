@@ -34,7 +34,7 @@ data class WasteLog(
 
 enum class TaskType {
     COMPLAINT,
-    GIVE_AWAY,
+    MISSED_COLLECTION,
     ROUTINE
 }
 
@@ -92,13 +92,75 @@ data class Employee(
     val avatarUrl: String? = null
 )
 
-data class Reward(
+enum class TransactionType {
+    EARN,
+    REDEEM
+}
+
+data class RewardTransaction(
     val id: String,
-    val title: String,
+    val type: TransactionType,
+    val points: Int,
     val description: String,
-    val costPoints: Int,
-    val category: String,
-    val isAvailable: Boolean = true
+    val date: String,
+    val referenceType: String? = null,
+    val referenceId: String? = null
+)
+
+data class RewardWallet(
+    val currentPoints: Int = 1250,
+    val totalEarned: Int = 1850,
+    val totalUsed: Int = 600,
+    val transactions: List<RewardTransaction> = emptyList()
+)
+
+data class ElectricityProvider(
+    val id: String,
+    val name: String,
+    val state: String,
+    val code: String
+)
+
+data class ElectricityBill(
+    val id: String,
+    val providerId: String,
+    val providerName: String,
+    val consumerNumber: String,
+    val consumerName: String,
+    val billNumber: String,
+    val billingMonth: String,
+    val dueDate: String,
+    val billAmount: Double,
+    val status: String = "UNPAID" // "UNPAID", "PAID"
+)
+
+data class BillPaymentRequest(
+    val providerId: String,
+    val consumerNumber: String,
+    val billNumber: String,
+    val totalBillAmount: Double,
+    val pointsToRedeem: Int
+)
+
+data class BillPaymentReceipt(
+    val paymentId: String,
+    val billNumber: String,
+    val consumerNumber: String,
+    val providerName: String,
+    val totalBillAmount: Double,
+    val pointsRedeemed: Int,
+    val pointsDiscountAmount: Double,
+    val amountPaid: Double,
+    val transactionRef: String,
+    val timestamp: String,
+    val updatedWalletBalance: Int,
+    val status: String = "SUCCESS"
+)
+
+data class PointsConversionConfig(
+    val pointsPerUnit: Int = 10,       // 10 points = 1.0 currency unit (i.e. 100 pts = ₹10)
+    val currencySymbol: String = "₹",
+    val description: String = "100 Points = ₹10 Electricity Bill Credit"
 )
 
 data class LiveTruckLocation(

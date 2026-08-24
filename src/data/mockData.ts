@@ -1,4 +1,13 @@
-import { Complaint, Employee, Reward, ServiceTask, User } from '../types';
+import {
+  Complaint,
+  Employee,
+  ServiceTask,
+  User,
+  RewardTransaction,
+  ElectricityProvider,
+  PointsConversionConfig,
+  BillPaymentReceipt,
+} from '../types';
 
 export const initialUser: User = {
   id: 'usr_001',
@@ -9,6 +18,77 @@ export const initialUser: User = {
   recycledKgYtd: 45.0,
   co2SavedKg: 112.5,
 };
+
+export const initialConversionConfig: PointsConversionConfig = {
+  pointsPerUnit: 10, // 10 pts = 1 INR (100 pts = ₹10)
+  currencySymbol: '₹',
+  description: '100 Reward Points = ₹10 Electricity Bill Credit',
+};
+
+export const initialElectricityProviders: ElectricityProvider[] = [
+  { id: 'prov-01', name: 'BESCOM (Bangalore Electricity Supply)', state: 'Karnataka', code: 'BESCOM' },
+  { id: 'prov-02', name: 'TANGEDCO (Tamil Nadu Generation & Distribution)', state: 'Tamil Nadu', code: 'TANGEDCO' },
+  { id: 'prov-03', name: 'MSEDCL (Mahavitaran Maharashtra)', state: 'Maharashtra', code: 'MSEDCL' },
+  { id: 'prov-04', name: 'BSES Yamuna Power Limited', state: 'Delhi', code: 'BSES-Y' },
+  { id: 'prov-05', name: 'APSPDCL (Southern Power Distribution AP)', state: 'Andhra Pradesh', code: 'APSPDCL' },
+  { id: 'prov-06', name: 'Tata Power DDL', state: 'Delhi-NCR', code: 'TATAPOWER' },
+];
+
+export const initialTransactions: RewardTransaction[] = [
+  {
+    id: 'tx-01',
+    type: 'EARN',
+    points: 500,
+    description: 'Organic Compost Segregation & Drop-off',
+    date: '2026-08-20 09:30',
+    referenceType: 'WASTE_LOG',
+    referenceId: 'WL-9821',
+  },
+  {
+    id: 'tx-02',
+    type: 'EARN',
+    points: 750,
+    description: 'Dry Recyclables (Plastic & Metal) Verification',
+    date: '2026-08-22 14:15',
+    referenceType: 'WASTE_LOG',
+    referenceId: 'WL-9844',
+  },
+  {
+    id: 'tx-03',
+    type: 'REDEEM',
+    points: 600,
+    description: 'Electricity Bill Credit - BESCOM (Cons. #90283471)',
+    date: '2026-08-23 11:20',
+    referenceType: 'ELECTRICITY_BILL',
+    referenceId: 'PAY-8829',
+  },
+  {
+    id: 'tx-04',
+    type: 'EARN',
+    points: 600,
+    description: 'Hazardous E-Waste Battery Drive Participation',
+    date: '2026-08-24 08:45',
+    referenceType: 'WASTE_LOG',
+    referenceId: 'WL-9902',
+  },
+];
+
+export const initialPaymentReceipts: BillPaymentReceipt[] = [
+  {
+    paymentId: 'PAY-8829',
+    billNumber: 'BILL-JUL-48201',
+    consumerNumber: '90283471',
+    providerName: 'BESCOM (Bangalore Electricity Supply)',
+    totalBillAmount: 850.0,
+    pointsRedeemed: 600,
+    pointsDiscountAmount: 60.0,
+    amountPaid: 790.0,
+    transactionRef: 'TXN_ELEC_1724410283921',
+    timestamp: '2026-08-23 11:20',
+    updatedWalletBalance: 1250,
+    status: 'PAID & RECORDED',
+  },
+];
 
 export const initialTasks: ServiceTask[] = [
   {
@@ -24,8 +104,8 @@ export const initialTasks: ServiceTask[] = [
   },
   {
     id: 'TSK-904',
-    title: 'GIVEAWAY PICKUP: DINING CHAIRS',
-    type: 'GIVEAWAY_PICKUP',
+    title: 'COMMERCIAL BIN DISPATCH: SECTOR 4',
+    type: 'SPECIAL_PICKUP',
     location: '14 Elm Court, Apt 2B',
     time: '13:00 - 14:00',
     distance: '1.2 mi',
@@ -111,36 +191,5 @@ export const initialEmployees: Employee[] = [
     status: 'OFF-DUTY',
     performance: 4.5,
     tasksDone: 110,
-  },
-];
-
-export const initialRewards: Reward[] = [
-  {
-    id: 'rew_1',
-    title: '$15 Organic Grocer Voucher',
-    description: 'Valid at all city co-op and farmers market stalls.',
-    costPoints: 500,
-    category: 'GROCERY',
-  },
-  {
-    id: 'rew_2',
-    title: 'Free Monthly Transit Pass',
-    description: 'Unlimited subway & municipal electric bus rides.',
-    costPoints: 1000,
-    category: 'TRANSIT',
-  },
-  {
-    id: 'rew_3',
-    title: 'EcoCycle Brutalist Steel Bottle',
-    description: 'Laser engraved vacuum-insulated reusable container.',
-    costPoints: 750,
-    category: 'MERCH',
-  },
-  {
-    id: 'rew_4',
-    title: '$25 Sustainable Apparel Credit',
-    description: 'Support local zero-waste and circular textile makers.',
-    costPoints: 1200,
-    category: 'APPAREL',
   },
 ];
