@@ -1,5 +1,27 @@
 package com.wasteflow.ecocycle.data.model
 
+data class LoginRequest(
+    val email: String,
+    val password: String
+)
+
+data class RegisterRequest(
+    val email: String,
+    val password: String,
+    val name: String,
+    val role: String = "CITIZEN",
+    val zone: String? = null,
+    val phone: String? = null
+)
+
+data class TokenResponse(
+    val access_token: String,
+    val token_type: String,
+    val user_id: String,
+    val role: String,
+    val name: String
+)
+
 data class User(
     val id: String = "u-01",
     val name: String = "Alex",
