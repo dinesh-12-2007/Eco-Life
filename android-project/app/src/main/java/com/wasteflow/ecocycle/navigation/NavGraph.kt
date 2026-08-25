@@ -46,13 +46,25 @@ fun WasteFlowNavGraph(
         // Auth Screen
         composable(Screen.Auth.route) {
             AuthScreen(
-                onLoginSuccess = {
-                    when (currentUser.role) {
-                        UserRole.CITIZEN -> navController.navigate(Screen.CitizenHome.route) {
-                            popUpTo(Screen.RoleSelection.route) { inclusive = true }
+                viewModel = viewModel,
+                onLoginSuccess = { tokenResponse ->
+                    when (tokenResponse.role) {
+                        "CITIZEN" -> {
+                            navController.navigate(Screen.CitizenHome.route) {
+                                popUpTo(Screen.RoleSelection.route) { inclusive = true }
+                            }
                         }
-                        UserRole.SERVICE_EMPLOYEE, UserRole.SYSTEM_MANAGEMENT -> navController.navigate(Screen.EmployeeDashboard.route) {
-                            popUpTo(Screen.RoleSelection.route) { inclusive = true }
+
+                        "SERVICE_EMPLOYEE", "SYSTEM_MANAGEMENT" -> {
+                            navController.navigate(Screen.EmployeeDashboard.route) {
+                                popUpTo(Screen.RoleSelection.route) { inclusive = true }
+                            }
+                        }
+
+                        else -> {
+                            navController.navigate(Screen.CitizenHome.route) {
+                                popUpTo(Screen.RoleSelection.route) { inclusive = true }
+                            }
                         }
                     }
                 }

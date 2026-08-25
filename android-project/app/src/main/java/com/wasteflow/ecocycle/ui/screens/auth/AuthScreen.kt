@@ -21,6 +21,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wasteflow.ecocycle.data.model.TokenResponse
 import com.wasteflow.ecocycle.ui.components.BrutalistButton
 import com.wasteflow.ecocycle.ui.components.BrutalistCard
 import com.wasteflow.ecocycle.ui.components.BrutalistShape
@@ -30,7 +31,7 @@ import com.wasteflow.ecocycle.viewmodel.WasteFlowViewModel
 @Composable
 fun AuthScreen(
     viewModel: WasteFlowViewModel,
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: (TokenResponse) -> Unit
 ) {
     val authLoading by viewModel.authLoading.collectAsState()
     val authError by viewModel.authError.collectAsState()
@@ -247,8 +248,8 @@ fun AuthScreen(
                             email = email,
                             password = password
                         ) { result ->
-                            if (result.isSuccess) {
-                                onLoginSuccess()
+                            result.getOrNull()?.let { tokenResponse ->
+                                onLoginSuccess(tokenResponse)
                             }
                         }
                     } else {
@@ -258,8 +259,8 @@ fun AuthScreen(
                             name = name,
                             role = "CITIZEN"
                         ) { result ->
-                            if (result.isSuccess) {
-                                onLoginSuccess()
+                            result.getOrNull()?.let { tokenResponse ->
+                                onLoginSuccess(tokenResponse)
                             }
                         }
                     }
