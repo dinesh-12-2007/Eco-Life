@@ -10,6 +10,69 @@ import java.util.UUID
 class WasteFlowRepository {
     private val api = ApiClient.apiService
 
+    suspend fun login(
+        email: String,
+        password: String
+    ): Result<TokenResponse> {
+        return try {
+            val response = api.login(LoginRequest(email, password))
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorMsg = response.errorBody()?.string() ?: "Login failed with code ${response.code()}"
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun register(
+        email: String,
+        password: String,
+        name: String,
+        role: String = "CITIZEN",
+        zone: String? = null,
+        phone: String? = null
+    ): Result<TokenResponse> {
+        return try {
+            val response = api.register(
+                RegisterRequest(
+                    email = email,
+                    password = password,
+                    name = name,
+                    role = role,
+                    zone = zone,
+                    phone = phone
+                )
+            )
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorMsg = response.errorBody()?.string() ?: "Registration failed with code ${response.code()}"
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getCurrentUser(
+        token: String
+    ): Result<User> {
+        return try {
+            val response = api.getCurrentUser("Bearer $token")
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorMsg = response.errorBody()?.string() ?: "Failed to fetch user profile with code ${response.code()}"
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     // In-memory persistent state for realistic offline-first experience
     private val _currentUser = MutableStateFlow(
         User(
