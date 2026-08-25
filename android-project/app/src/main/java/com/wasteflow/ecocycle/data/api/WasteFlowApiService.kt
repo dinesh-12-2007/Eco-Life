@@ -5,6 +5,21 @@ import retrofit2.Response
 import retrofit2.http.*
 
 interface WasteFlowApiService {
+    @POST("api/auth/login")
+    suspend fun login(
+        @Body request: LoginRequest
+    ): Response<TokenResponse>
+
+    @POST("api/auth/register")
+    suspend fun register(
+        @Body request: RegisterRequest
+    ): Response<TokenResponse>
+
+    @GET("api/auth/me")
+    suspend fun getCurrentUser(
+        @Header("Authorization") authorization: String
+    ): Response<User>
+
     @GET("api/user/{id}")
     suspend fun getUserProfile(@Path("id") userId: String): Response<User>
 
