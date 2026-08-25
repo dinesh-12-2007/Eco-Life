@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,11 +25,16 @@ import com.wasteflow.ecocycle.ui.components.BrutalistButton
 import com.wasteflow.ecocycle.ui.components.BrutalistCard
 import com.wasteflow.ecocycle.ui.components.BrutalistShape
 import com.wasteflow.ecocycle.ui.theme.*
+import com.wasteflow.ecocycle.viewmodel.WasteFlowViewModel
 
 @Composable
 fun AuthScreen(
+    viewModel: WasteFlowViewModel,
     onLoginSuccess: () -> Unit
 ) {
+    val authLoading by viewModel.authLoading.collectAsState()
+    val authError by viewModel.authError.collectAsState()
+
     var isLoginTab by remember { mutableStateOf(true) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -221,11 +227,44 @@ fun AuthScreen(
             }
         }
 
+        if (authError != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = authError ?: "",
+                style = MaterialTheme.typography.bodySmall,
+                color = EcoError
+            )
+        }
+
         Spacer(modifier = Modifier.height(24.dp))
 
         BrutalistButton(
-            text = if (isLoginTab) "ENTER" else "ENLIST",
-            onClick = onLoginSuccess,
+            text = if (authLoading) "AUTHENTICATING..." else if (isLoginTab) "ENTER" else "ENLIST",
+            onClick = {
+                if (!authLoading) {
+                    if (isLoginTab) {
+                        viewModel.login(
+                            email = email,
+                            password = password
+                        ) { result ->
+                            if (result.isSuccess) {
+                                onLoginSuccess()
+                            }
+                        }
+                    } else {
+                        viewModel.register(
+                            email = email,
+                            password = password,
+                            name = name,
+                            role = "CITIZEN"
+                        ) { result ->
+                            if (result.isSuccess) {
+                                onLoginSuccess()
+                            }
+                        }
+                    }
+                }
+            },
             backgroundColor = if (isLoginTab) EcoPrimaryContainer else EcoOnSurface,
             contentColor = if (isLoginTab) EcoOnPrimaryContainer else EcoSurface,
             icon = {
@@ -255,7 +294,7 @@ fun AuthScreen(
             modifier = Modifier.fillMaxWidth(),
             backgroundColor = EcoSurface,
             shadowOffset = 4.dp,
-            onClick = onLoginSuccess
+            onClick = { /* Google Connect placeholder */ }
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
