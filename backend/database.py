@@ -3,25 +3,17 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://postgres:postgres@localhost:5432/wasteflow_ecocycle"
-)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Allow SQLite fallback if postgres is not available in local test env
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is required.")
+
 if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 else:
-    # Use SQLite file if PostgreSQL server is not locally bound
-    try:
-        engine = create_engine(DATABASE_URL)
-        # Test connection
-        with engine.connect() as conn:
-            pass
-    except Exception:
-        # Fallback for environments without local postgres server running
-        sqlite_url = "sqlite:///./wasteflow_ecocycle.db"
-        engine = create_engine(sqlite_url, connect_args={"check_same_thread": False})
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -33,3 +25,4 @@ def get_db():
         yield db
     finally:
         db.close()
+
