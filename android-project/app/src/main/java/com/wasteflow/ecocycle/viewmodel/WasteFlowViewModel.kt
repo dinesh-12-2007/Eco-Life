@@ -4,14 +4,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wasteflow.ecocycle.data.model.*
 import com.wasteflow.ecocycle.data.repository.WasteFlowRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class WasteFlowViewModel(
     private val repository: WasteFlowRepository = WasteFlowRepository()
 ) : ViewModel() {
+
+    private val _authLoading = MutableStateFlow(false)
+    val authLoading: StateFlow<Boolean> = _authLoading.asStateFlow()
+
+    private val _authError = MutableStateFlow<String?>(null)
+    val authError: StateFlow<String?> = _authError.asStateFlow()
 
     val currentUser: StateFlow<User> = repository.currentUser
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), User())
@@ -104,6 +112,59 @@ class WasteFlowViewModel(
     fun submitComplaint(title: String, description: String, location: String, priority: ComplaintPriority) {
         viewModelScope.launch {
             repository.addComplaint(title, description, location, priority)
+        }
+    }
+
+    fun login(
+        email: String,
+        password: String,
+        onResult: (Result<TokenResponse>) -> Unit
+    ) {
+        viewModelScope.launch {
+            _authLoading.value = true
+            _authError.value = null
+
+            val result = repository.login(email, password)
+
+            _authLoading.value = false
+
+            if (result.isFailure) {
+                _authError.value = result.exceptionOrNull()?.message
+            }
+
+            onResult(result)
+        }
+    }
+
+    fun register(
+        email: String,
+        password: String,
+        name: String,
+        role: String = "CITIZEN",
+        zone: String? = null,
+        phone: String? = null,
+        onResult: (Result<TokenResponse>) -> Unit
+    ) {
+        viewModelScope.launch {
+            _authLoading.value = true
+            _authError.value = null
+
+            val result = repository.register(
+                email = email,
+                password = password,
+                name = name,
+                role = role,
+                zone = zone,
+                phone = phone
+            )
+
+            _authLoading.value = false
+
+            if (result.isFailure) {
+                _authError.value = result.exceptionOrNull()?.message
+            }
+
+            onResult(result)
         }
     }
 }
