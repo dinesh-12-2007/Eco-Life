@@ -23,13 +23,13 @@ data class TokenResponse(
 )
 
 data class User(
-    val id: String = "u-01",
-    val name: String = "Alex",
-    val email: String = "alex@ecocycle.org",
+    val id: String = "",
+    val name: String = "",
+    val email: String = "",
     val role: UserRole = UserRole.CITIZEN,
-    val balancePoints: Int = 1250,
-    val recycledKgYtd: Double = 45.0,
-    val zone: String = "Zone B"
+    val balancePoints: Int = 0,
+    val recycledKgYtd: Double = 0.0,
+    val zone: String = ""
 )
 
 enum class UserRole {
@@ -130,9 +130,9 @@ data class RewardTransaction(
 )
 
 data class RewardWallet(
-    val currentPoints: Int = 1250,
-    val totalEarned: Int = 1850,
-    val totalUsed: Int = 600,
+    val currentPoints: Int = 0,
+    val totalEarned: Int = 0,
+    val totalUsed: Int = 0,
     val transactions: List<RewardTransaction> = emptyList()
 )
 

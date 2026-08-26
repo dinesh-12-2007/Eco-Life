@@ -109,7 +109,7 @@ fun CitizenDashboardScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Hey Alex + Balance
+            // User Greeting + Balance
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
@@ -133,7 +133,7 @@ fun CitizenDashboardScreen(
                         color = EcoOnSurface
                     )
                     Text(
-                        text = user.name.uppercase(),
+                        text = if (user.name.isNotBlank()) user.name.uppercase() else "CITIZEN",
                         style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Black),
                         color = EcoPrimaryContainer
                     )
@@ -219,13 +219,13 @@ fun CitizenDashboardScreen(
                             Icon(Icons.Default.LocalShipping, contentDescription = null, tint = EcoOnSurface)
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "TRUCK #402",
+                                text = if (user.zone.isNotBlank()) "COLLECTION TRUCK" else "MUNICIPAL FLEET",
                                 style = MaterialTheme.typography.labelLarge,
                                 color = EcoOnSurface
                             )
                         }
                         BrutalistBadge(
-                            text = "EN ROUTE",
+                            text = if (user.zone.isNotBlank()) "SCHEDULED" else "STANDBY",
                             backgroundColor = EcoOnSurface,
                             contentColor = EcoSurface
                         )
@@ -248,7 +248,7 @@ fun CitizenDashboardScreen(
                                 modifier = Modifier.size(36.dp)
                             )
                             Text(
-                                text = "Downtown / Zone B Corridor",
+                                text = if (user.zone.isNotBlank()) "${user.zone} Route Sector" else "Live Tracking Available",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = EcoOnSurfaceVariant
                             )
@@ -264,7 +264,7 @@ fun CitizenDashboardScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "ETA: 14 mins",
+                            text = if (user.zone.isNotBlank()) "Zone: ${user.zone}" else "Tap to view route",
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                             color = EcoOnSurface
                         )

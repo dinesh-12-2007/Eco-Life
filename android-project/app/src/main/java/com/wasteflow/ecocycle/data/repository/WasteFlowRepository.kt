@@ -113,7 +113,7 @@ class WasteFlowRepository(
                     id = tokenResponse.user_id,
                     name = tokenResponse.name,
                     role = try { UserRole.valueOf(tokenResponse.role) } catch (e: Exception) { UserRole.CITIZEN },
-                    zone = zone ?: "Zone B"
+                    zone = zone ?: ""
                 )
                 refreshWallet(tokenResponse.user_id)
                 Result.success(tokenResponse)
@@ -171,17 +171,7 @@ class WasteFlowRepository(
     }
 
     // In-memory persistent state for realistic offline-first experience
-    private val _currentUser = MutableStateFlow(
-        User(
-            id = "u-01",
-            name = "Alex",
-            email = "alex@ecocycle.org",
-            role = UserRole.CITIZEN,
-            balancePoints = 1250,
-            recycledKgYtd = 45.0,
-            zone = "Zone B"
-        )
-    )
+    private val _currentUser = MutableStateFlow(User())
     val currentUser: StateFlow<User> = _currentUser.asStateFlow()
 
     private val _tasks = MutableStateFlow(
@@ -297,66 +287,10 @@ class WasteFlowRepository(
     )
     val electricityProviders: StateFlow<List<ElectricityProvider>> = _electricityProviders.asStateFlow()
 
-    private val _transactions = MutableStateFlow(
-        listOf(
-            RewardTransaction(
-                id = "tx-101",
-                type = TransactionType.EARN,
-                points = 150,
-                description = "Segregated Plastic Recycling (10.0 kg)",
-                date = "2026-08-22 14:30",
-                referenceType = "WASTE_LOG",
-                referenceId = "WL-8819"
-            ),
-            RewardTransaction(
-                id = "tx-102",
-                type = TransactionType.EARN,
-                points = 200,
-                description = "Metal & Aluminium Cans Drop-off (10.0 kg)",
-                date = "2026-08-18 10:15",
-                referenceType = "WASTE_LOG",
-                referenceId = "WL-8702"
-            ),
-            RewardTransaction(
-                id = "tx-103",
-                type = TransactionType.REDEEM,
-                points = 600,
-                description = "Electricity Bill Credit - BESCOM (Cons. #90283471)",
-                date = "2026-08-10 11:20",
-                referenceType = "ELECTRICITY_BILL",
-                referenceId = "PAY-5510"
-            ),
-            RewardTransaction(
-                id = "tx-104",
-                type = TransactionType.EARN,
-                points = 1500,
-                description = "Citizen Bonus: Zero-Contamination Waste Streak",
-                date = "2026-08-01 09:00",
-                referenceType = "STREAK_BONUS",
-                referenceId = "STRK-01"
-            )
-        )
-    )
+    private val _transactions = MutableStateFlow<List<RewardTransaction>>(emptyList())
     val transactions: StateFlow<List<RewardTransaction>> = _transactions.asStateFlow()
 
-    private val _billPaymentReceipts = MutableStateFlow(
-        listOf(
-            BillPaymentReceipt(
-                paymentId = "PAY-5510",
-                billNumber = "BILL-AUG-9921",
-                consumerNumber = "90283471",
-                providerName = "BESCOM (Bangalore Electricity)",
-                totalBillAmount = 850.0,
-                pointsRedeemed = 600,
-                pointsDiscountAmount = 60.0,
-                amountPaid = 790.0,
-                transactionRef = "TXN_ELEC_993821093",
-                timestamp = "2026-08-10 11:20",
-                updatedWalletBalance = 1250,
-                status = "SUCCESS"
-            )
-        )
-    )
+    private val _billPaymentReceipts = MutableStateFlow<List<BillPaymentReceipt>>(emptyList())
     val billPaymentReceipts: StateFlow<List<BillPaymentReceipt>> = _billPaymentReceipts.asStateFlow()
 
     fun setUserRole(role: UserRole) {

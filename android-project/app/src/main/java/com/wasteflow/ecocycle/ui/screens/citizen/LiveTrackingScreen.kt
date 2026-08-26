@@ -71,7 +71,7 @@ fun LiveTrackingScreen(
                         .padding(horizontal = 8.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = "TRUCK #402 (LIVE GPS)",
+                        text = "COLLECTION TRUCK (GPS)",
                         style = MaterialTheme.typography.labelSmall,
                         color = EcoSurface
                     )
@@ -80,7 +80,7 @@ fun LiveTrackingScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Downtown Los Angeles -> Zone B Sector",
+                    text = "Active Sector Route",
                     style = MaterialTheme.typography.bodySmall,
                     color = EcoOnSurfaceVariant
                 )
@@ -118,7 +118,7 @@ fun LiveTrackingScreen(
                 ) {
                     Column {
                         Text(
-                            text = "TRUCK #402",
+                            text = "COLLECTION TRUCK",
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
                             color = EcoOnSurface
                         )
@@ -201,7 +201,7 @@ fun LiveTrackingScreen(
 
                 Column {
                     Text(
-                        text = "Sarah Jenkins",
+                        text = "Assigned Driver",
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = EcoOnSurface
                     )
@@ -213,7 +213,7 @@ fun LiveTrackingScreen(
                             contentColor = EcoWhite
                         )
                         BrutalistBadge(
-                            text = "ZONE B",
+                            text = "SECTOR",
                             backgroundColor = EcoSurfaceContainerHighest,
                             contentColor = EcoOnSurface
                         )

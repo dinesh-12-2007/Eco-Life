@@ -51,7 +51,7 @@ fun ElectricityBillScreen(
         mutableStateOf(providers.firstOrNull() ?: ElectricityProvider("prov-01", "BESCOM (Bangalore Electricity)", "Karnataka", "BESCOM"))
     }
     var providerDropdownExpanded by remember { mutableStateOf(false) }
-    var consumerNumberInput by remember { mutableStateOf("90283471") }
+    var consumerNumberInput by remember { mutableStateOf("") }
     var fetchedBill by remember { mutableStateOf<ElectricityBill?>(null) }
     var pointsToUseInput by remember { mutableStateOf(0) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -356,7 +356,7 @@ fun ElectricityBillScreen(
                             consumerNumberInput = it.filter { char -> char.isLetterOrDigit() }
                             fetchedBill = null
                         },
-                        placeholder = { Text("e.g. 90283471") },
+                        placeholder = { Text("Enter Consumer ID") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
