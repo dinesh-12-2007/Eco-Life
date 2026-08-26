@@ -40,8 +40,8 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
     wallet = RewardWallet(
         id=f"wal-{user_id}",
         user_id=user_id,
-        current_balance=250, # Initial sign-up bonus points
-        total_earned=250,
+        current_balance=0,
+        total_earned=0,
         total_used=0
     )
     db.add(wallet)
