@@ -1,5 +1,7 @@
 package com.wasteflow.ecocycle.data.repository
 
+import android.content.Context
+import android.content.SharedPreferences
 import com.wasteflow.ecocycle.data.api.ApiClient
 import com.wasteflow.ecocycle.data.model.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -7,8 +9,56 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.UUID
 
-class WasteFlowRepository {
+class WasteFlowRepository(
+    private val context: Context? = null
+) {
     private val api = ApiClient.apiService
+
+    private val prefs: SharedPreferences? by lazy {
+        val appContext = context ?: try {
+            Class.forName("android.app.ActivityThread")
+                .getMethod("currentApplication")
+                .invoke(null) as? Context
+        } catch (e: Exception) {
+            null
+        }
+        appContext?.getSharedPreferences("wasteflow_auth", Context.MODE_PRIVATE)
+    }
+
+    private var inMemoryToken: String? = null
+    private var inMemoryUserId: String? = null
+
+    private fun getAccessToken(): String? {
+        return prefs?.getString("access_token", inMemoryToken) ?: inMemoryToken
+    }
+
+    private fun getStoredUserId(): String? {
+        return prefs?.getString("user_id", inMemoryUserId) ?: inMemoryUserId
+    }
+
+    private fun saveAccessToken(token: String) {
+        inMemoryToken = token
+        prefs?.edit()?.putString("access_token", token)?.apply()
+    }
+
+    private fun saveUserId(userId: String) {
+        inMemoryUserId = userId
+        prefs?.edit()?.putString("user_id", userId)?.apply()
+    }
+
+    fun logout() {
+        inMemoryToken = null
+        inMemoryUserId = null
+        prefs?.edit()
+            ?.remove("access_token")
+            ?.remove("user_id")
+            ?.apply()
+    }
+
+    fun isLoggedIn(): Boolean {
+        val token = getAccessToken()
+        return !token.isNullOrBlank()
+    }
 
     suspend fun login(
         email: String,
@@ -17,7 +67,16 @@ class WasteFlowRepository {
         return try {
             val response = api.login(LoginRequest(email, password))
             if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+                val tokenResponse = response.body()!!
+                saveAccessToken(tokenResponse.access_token)
+                saveUserId(tokenResponse.user_id)
+                _currentUser.value = _currentUser.value.copy(
+                    id = tokenResponse.user_id,
+                    name = tokenResponse.name,
+                    role = try { UserRole.valueOf(tokenResponse.role) } catch (e: Exception) { UserRole.CITIZEN }
+                )
+                refreshWallet(tokenResponse.user_id)
+                Result.success(tokenResponse)
             } else {
                 val errorMsg = response.errorBody()?.string() ?: "Login failed with code ${response.code()}"
                 Result.failure(Exception(errorMsg))
@@ -47,13 +106,40 @@ class WasteFlowRepository {
                 )
             )
             if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+                val tokenResponse = response.body()!!
+                saveAccessToken(tokenResponse.access_token)
+                saveUserId(tokenResponse.user_id)
+                _currentUser.value = _currentUser.value.copy(
+                    id = tokenResponse.user_id,
+                    name = tokenResponse.name,
+                    role = try { UserRole.valueOf(tokenResponse.role) } catch (e: Exception) { UserRole.CITIZEN },
+                    zone = zone ?: "Zone B"
+                )
+                refreshWallet(tokenResponse.user_id)
+                Result.success(tokenResponse)
             } else {
                 val errorMsg = response.errorBody()?.string() ?: "Registration failed with code ${response.code()}"
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    suspend fun refreshWallet(userId: String = getStoredUserId() ?: _currentUser.value.id) {
+        try {
+            val walletResp = api.getWallet(userId)
+            if (walletResp.isSuccessful && walletResp.body() != null) {
+                val wallet = walletResp.body()!!
+                _currentUser.value = _currentUser.value.copy(
+                    balancePoints = wallet.currentPoints
+                )
+                if (wallet.transactions.isNotEmpty()) {
+                    _transactions.value = wallet.transactions
+                }
+            }
+        } catch (e: Exception) {
+            // Non-blocking wallet refresh
         }
     }
 
@@ -71,6 +157,17 @@ class WasteFlowRepository {
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    suspend fun logWaste(
+        wasteLog: WasteLog
+    ): Result<WasteLog> {
+        return submitWasteLog(
+            zone = wasteLog.zone,
+            type = wasteLog.type,
+            weightKg = wasteLog.weightKg,
+            points = wasteLog.pointsCalculated
+        )
     }
 
     // In-memory persistent state for realistic offline-first experience
@@ -270,24 +367,57 @@ class WasteFlowRepository {
         _conversionConfig.value = PointsConversionConfig(pointsPerUnit, currencySymbol, description)
     }
 
-    fun submitWasteLog(zone: String, type: WasteType, weightKg: Double, points: Int) {
-        val user = _currentUser.value
-        val updatedBalance = user.balancePoints + points
-        _currentUser.value = user.copy(
-            balancePoints = updatedBalance,
-            recycledKgYtd = user.recycledKgYtd + weightKg
-        )
+    suspend fun submitWasteLog(
+        zone: String,
+        type: WasteType,
+        weightKg: Double,
+        points: Int = 0
+    ): Result<WasteLog> {
+        val token = getAccessToken()
+        if (token.isNullOrBlank()) {
+            return Result.failure(IllegalStateException("User is not authenticated. Please log in first."))
+        }
 
-        val newTx = RewardTransaction(
-            id = "tx-${System.currentTimeMillis() % 100000}",
-            type = TransactionType.EARN,
-            points = points,
-            description = "Logged ${type.name} recycling (${weightKg} kg in $zone)",
-            date = "Today, Just now",
-            referenceType = "WASTE_LOG",
-            referenceId = "WL-${(1000..9999).random()}"
-        )
-        _transactions.value = listOf(newTx) + _transactions.value
+        return try {
+            val wasteLogPayload = WasteLog(
+                id = "wl-${UUID.randomUUID().toString().take(8)}",
+                zone = zone,
+                type = type,
+                weightKg = weightKg,
+                pointsCalculated = 0 // Server calculates points securely based on waste type and weight
+            )
+
+            val response = api.logWaste(
+                authorization = "Bearer $token",
+                wasteLog = wasteLogPayload
+            )
+
+            if (response.isSuccessful && response.body() != null) {
+                val returnedLog = response.body()!!
+
+                // Update cumulative recycled weight
+                val user = _currentUser.value
+                _currentUser.value = user.copy(
+                    recycledKgYtd = user.recycledKgYtd + weightKg
+                )
+
+                // Refresh user's wallet balance and transactions from live backend
+                val currentUserId = getStoredUserId() ?: _currentUser.value.id
+                refreshWallet(currentUserId)
+
+                Result.success(returnedLog)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val errorMsg = if (!errorBody.isNullOrBlank()) {
+                    errorBody
+                } else {
+                    "Waste logging failed with HTTP code ${response.code()}"
+                }
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     fun fetchElectricityBill(providerId: String, consumerNumber: String): ElectricityBill {
