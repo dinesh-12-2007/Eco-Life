@@ -40,6 +40,7 @@ fun AuthScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -161,6 +162,31 @@ fun AuthScreen(
                 singleLine = true
             )
             Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "MOBILE NUMBER",
+                style = MaterialTheme.typography.labelSmall,
+                color = EcoOnSurface
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            OutlinedTextField(
+                value = phone,
+                onValueChange = { phone = it },
+                placeholder = { Text("MOBILE NUMBER", color = EcoOnSurfaceVariant.copy(alpha = 0.4f)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(2.dp, EcoOnSurface, BrutalistShape),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = EcoSurfaceContainerLowest,
+                    unfocusedContainerColor = EcoSurfaceContainerLowest,
+                    focusedBorderColor = EcoPrimaryContainer,
+                    unfocusedBorderColor = Color.Transparent
+                ),
+                shape = BrutalistShape,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
         }
 
         Text(
@@ -257,7 +283,8 @@ fun AuthScreen(
                             email = email,
                             password = password,
                             name = name,
-                            role = "CITIZEN"
+                            role = "CITIZEN",
+                            phone = phone
                         ) { result ->
                             result.getOrNull()?.let { tokenResponse ->
                                 onLoginSuccess(tokenResponse)
