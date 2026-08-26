@@ -24,7 +24,10 @@ interface WasteFlowApiService {
     suspend fun getUserProfile(@Path("id") userId: String): Response<User>
 
     @POST("api/waste/log")
-    suspend fun logWaste(@Body wasteLog: WasteLog): Response<WasteLog>
+    suspend fun logWaste(
+        @Header("Authorization") authorization: String,
+        @Body wasteLog: WasteLog
+    ): Response<WasteLog>
 
     @GET("api/tasks")
     suspend fun getTasks(): Response<List<ServiceTask>>
